@@ -3,8 +3,8 @@
 /output.csv
 /output.xlsx
 /pyjama-io.iml
-/sample.csv
-/sample02.csv
-/sample03.csv
+/test/parallels/sample.csv
+/test/parallels/sample02.csv
+/test/parallels/sample03.csv
 /.cpcache/
 /clucy/

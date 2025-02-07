@@ -1,0 +1,6 @@
+prompts,models,pre
+who is super mario,tinyllama,given text %s answer question %s
+who is splinter,tinydolphin,
+who is trump,llama3.2,
+who is Jacques Tati,,
+generate 3 hex colors that are nice for a winter palette,,
