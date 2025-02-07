@@ -47,7 +47,8 @@
      :prompts [["Why is the sky blue" "The sky appears blue because of a process called Rayleigh scattering."]
                ["Why is the sky blue" "Blue is scattered more than other colors because it travels as shorter, smaller waves."]
                ["Why is the sky blue" "During the day the sky looks blue because it's the blue light that gets scattered the most. "]
+               ["Why is the sky blue" "Because it is Christmas. "]
                ]}
     (pyjama.parallel/pgen)
-    (map #(-> [(:prompt %) (:result %)]))
+    (map #(-> [(:prompt %) (:result %) (:url %)]))
     (clojure.pprint/pprint)))
