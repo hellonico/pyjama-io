@@ -68,9 +68,9 @@
         job-position "financial IT engineer in Japan"]
     (->>
       {:url     "http://localhost:11432"
-       :models  ["llama3.1"]
+       :models  ["llama3.3"]
        :pre     ["This is a potential resume %s01 for this job position: %s02.
-       With this knowledge, answer as shortly as possible the question: %s03"
+       With this knowledge, answer as briefly as possible the question: %s03"
                  resume
                  job-position]
        :system  "always answer in a very short less than 50 characters sentence"

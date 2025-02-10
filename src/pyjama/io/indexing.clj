@@ -15,12 +15,15 @@
 (defn extract-text [file]
   (readers/extract-text file))
 
+(defn index-document[pdf]
+  (println "Indexing:" pdf)
+  (let [text (extract-text pdf)]
+    (clucy/add @search-index {:id (.getAbsolutePath (io/as-file pdf)) :content text})))
+
 (defn index-documents [folder-path]
   (let [pdf-files (pyjama.io.core/load-files-from-folders folder-path #{"pdf" "md" "epub" "txt"})]
     (doseq [pdf pdf-files]
-      (println "Indexing:" pdf-files)
-      (let [text (extract-text pdf)]
-        (clucy/add @search-index {:id (.getAbsolutePath (io/as-file pdf)) :content text})))))
+      (index-document pdf))))
 
 (defn- escape-lucene-query [s]
   (str/replace s #"[+\-&|!(){}\\[\\]^\"~*?:\\/]" "\\\\$0"))
@@ -144,3 +147,11 @@
           (str/join "\n\n" relevant-parts)  ;; Join relevant parts with double newlines
           "No relevant text found."))
       "Document not found or no content available.")))
+
+
+(defn augmented-text [best-pdf keywords strategy]
+  (condp = strategy
+    :sentences (str/join "\n" (map :sentence (extract-relevant-sentences-in-doc best-pdf keywords)))
+    :parts (extract-relevant-text-parts best-pdf keywords)
+    :full (slurp best-pdf)
+    (throw (Exception. "Invalid strategy"))))
