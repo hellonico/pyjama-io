@@ -1,4 +1,4 @@
-(ns indexing-test
+(ns lucene-based-rag-test
   (:require [clojure.test :refer :all]
             [pyjama.functions :refer [ollama-fn]]
             [pyjama.io.core :as pyo]
@@ -25,7 +25,6 @@
 (def -answerer-settings
   {
    :url    "http://localhost:11432"
-   ;:model  "hellonico/Tanuki-7B-v0.1.f16.gguf"
    :model  "llama3.1"
    :stream true
    :pre
@@ -38,23 +37,20 @@
 
 (def -document "https://www.toyota.com/content/dam/toyota/brochures/pdf/2025/gr86_ebrochure.pdf")
 
-(defn test-soup-rag [pdf-file search-stategy keyworder-settings answerer-settings]
+(defn lucene-based-rag [pdf-file search-stategy keyworder-settings answerer-settings]
   (let [_ (pyjama.io.indexing/index-document pdf-file)
         keyworder (ollama-fn keyworder-settings)
         question "What is the new Toyota model?"
         keywords (keyworder question)
         answerer (ollama-fn answerer-settings)
         ]
-
     (-> question
         (keyworder)
         (pyjama.io.indexing/best-matching-document)
         :doc
         (pyjama.io.indexing/augmented-text keywords :sentences)
-        ;(#(do (println %) %))
-        (#(answerer [% question]))
-        ;(println)
-        )))
+        (#(answerer [% question])))))
 
 (deftest indexing
-  (test-soup-rag (pyo/download-file -document) :sentences -keyworder-settings -answerer-settings))
+  (lucene-based-rag (pyo/download-file -document)
+                    :sentences -keyworder-settings -answerer-settings))
