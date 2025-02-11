@@ -6,6 +6,9 @@
             [clojure.string :as str])
   (:import (java.io File)))
 
+(defn file-empty? [file-path]
+  (zero? (.length (io/file file-path))))
+
 ;(defn save-best-documents [file-path best-docs]
 ;  (spit file-path best-docs))
 (defn save-to-file [file-path best-docs]
@@ -66,9 +69,7 @@
   (cond
     (nil? path) false
     (not (.exists (clojure.java.io/as-file path))) false
-    :default (read-string (slurp path))
-    )
-  )
+    :default (read-string (slurp path))))
 
 
 (defn download-file [url]

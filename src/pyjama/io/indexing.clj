@@ -1,9 +1,9 @@
 (ns pyjama.io.indexing
   "This uses lucene to index documents. Also allows to retrieve text later."
   (:require [clojure.java.io :as io]
-            [pyjama.io.core]
             [clojure.string :as str]
             [clucy.core :as clucy]
+            [pyjama.io.core]
             [pyjama.io.readers :as readers])
   (:import (java.util.regex Pattern)))
 
@@ -15,7 +15,7 @@
 (defn extract-text [file]
   (readers/extract-text file))
 
-(defn index-document[pdf]
+(defn index-document [pdf]
   (println "Indexing:" pdf)
   (let [text (extract-text pdf)]
     (clucy/add @search-index {:id (.getAbsolutePath (io/as-file pdf)) :content text})))
@@ -24,6 +24,9 @@
   (let [pdf-files (pyjama.io.core/load-files-from-folders folder-path #{"pdf" "md" "epub" "txt"})]
     (doseq [pdf pdf-files]
       (index-document pdf))))
+;
+; SEARCH documents for keywords
+;
 
 (defn- escape-lucene-query [s]
   (str/replace s #"[+\-&|!(){}\\[\\]^\"~*?:\\/]" "\\\\$0"))
@@ -43,7 +46,7 @@
 
 (defn best-matching-document [keywords]
   (let [query (build-query keywords)
-        results (clucy/search @search-index query 1)       ;; Search using keywords
+        results (clucy/search @search-index query 1)        ;; Search using keywords
         scored-results (map (fn [doc] {:doc (:id doc) :score (score-document doc keywords)}) results)
         best-match (apply max-key :score scored-results)]
     best-match))
@@ -54,7 +57,7 @@
 
 ;; Function to split the text into sentences (simple sentence splitting using period as delimiter)
 (defn- split-into-sentences [text]
-  (->> (str/split text #"[。！？\n]")  ;; Split on full stop, exclamation mark, question mark, and newline
+  (->> (str/split text #"[。！？\n]")                          ;; Split on full stop, exclamation mark, question mark, and newline
        (remove str/blank?)
        (map str/trim)))
 
@@ -71,10 +74,10 @@
 
 ;; Function to search for documents containing a keyword
 (defn- search-in-document [doc-id]
-  (let [doc-result (clucy/search @search-index (str "id:" doc-id) 1)]  ;; Search for the document by its ID
+  (let [doc-result (clucy/search @search-index (str "id:" doc-id) 1)] ;; Search for the document by its ID
     (if (empty? doc-result)
       nil
-      (:content (first doc-result)))))  ;; Get the content of the document
+      (:content (first doc-result)))))                      ;; Get the content of the document
 
 (defn extract-relevant-sentences-in-doc [doc-id keywords]
   (let [doc-content (search-in-document doc-id)]
@@ -94,9 +97,9 @@
       (fn [idx sentence]
         (when (some #(re-find % sentence) kw-patterns)
           {:sentence sentence
-           :context [(get sentences (dec idx) "")  ;; Previous sentence
-                     sentence
-                     (get sentences (inc idx) "")]  ;; Next sentence
+           :context  [(get sentences (dec idx) "")          ;; Previous sentence
+                      sentence
+                      (get sentences (inc idx) "")]         ;; Next sentence
            }))
       sentences)))
 
@@ -139,19 +142,25 @@
 ;; Main function to extract relevant parts of a document and return as text
 
 (defn extract-relevant-text-parts [doc-id keywords & [num-parts]]
-  (let [num-parts (or num-parts 2)]  ;; Default to 2 parts if not specified
+  (let [num-parts (or num-parts 2)]                         ;; Default to 2 parts if not specified
     (if-let [doc-content (search-in-document doc-id)]
       (let [parts (split-into-parts doc-content num-parts)
             relevant-parts (filter #(part-has-keyword? % keywords) parts)]
         (if (seq relevant-parts)
-          (str/join "\n\n" relevant-parts)  ;; Join relevant parts with double newlines
+          (str/join "\n\n" relevant-parts)                  ;; Join relevant parts with double newlines
           "No relevant text found."))
       "Document not found or no content available.")))
 
 
-(defn augmented-text [best-pdf keywords strategy]
+(defn augmented-text
+  "We return sub parts of the orginal text depending on the stategy:
+  - :sentences returns a set of sentences
+  - :parts returns half or third of the document, containing the most valid information
+  - :full returns the full document. This uses a lot of context memory if used later on with ollama-fn
+  "
+  [best-pdf keywords strategy]
   (condp = strategy
     :sentences (str/join "\n" (map :sentence (extract-relevant-sentences-in-doc best-pdf keywords)))
-    :parts (extract-relevant-text-parts best-pdf keywords)
+    :parts (extract-relevant-text-parts best-pdf keywords)  ; this is average at best
     :full (slurp best-pdf)
     (throw (Exception. "Invalid strategy"))))
