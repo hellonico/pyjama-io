@@ -9,6 +9,9 @@
 (defn file-empty? [file-path]
   (zero? (.length (io/file file-path))))
 
+(defn file-exists? [filename]
+  (.exists (File. filename)))
+
 ;(defn save-best-documents [file-path best-docs]
 ;  (spit file-path best-docs))
 (defn save-to-file [file-path best-docs]

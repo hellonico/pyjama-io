@@ -31,10 +31,8 @@
 
  :aliases {
            :test {:extra-paths ["test"]
-                  :extra-deps  {
-                                io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}
-                                hellonico/pyjama {:local/root "../pyjama"}
-                                }
+                  :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                                hellonico/pyjama {:local/root "../pyjama"}}
                   :main-opts   ["-m" "cognitect.test-runner"]
                   :exec-fn     cognitect.test-runner.api/test}
            }

@@ -6,27 +6,24 @@
             [pyjama.embeddings :refer [enhanced-context generate-vectorz-documents]]
             [pyjama.io.core :as pyo]
             [pyjama.io.embeddings]
-            [pyjama.io.indexing])
+            [pyjama.io.indexing]
+            [pyjama.io.readers])
   (:import (java.io File)))
 
 (def url (or (System/getenv "OLLAMA_URL")
              "http://localhost:11432"))
 (def embedding-model
-  "granite-embedding")
+  "mxbai-embed-large")
 
 (deftest pull-embeddings-model
   (->
     (pyjama.core/ollama url :pull {:model embedding-model})
     (println)))
 
-; TODO: merge with others
-(defn file-exists? [filename]
-  (.exists (File. filename)))
-
 (defn rag [config]
   (let [persist-file (or (:embeddings-file config) "embeddings.bin")
         documents
-        (if (file-exists? persist-file)
+        (if (pyjama.io.core/file-exists? persist-file)
           (pyjama.io.embeddings/load-documents persist-file)
           (let [documents
                 (generate-vectorz-documents
@@ -75,7 +72,7 @@
 (def -toyota-document "https://www.toyota.com/content/dam/toyota/brochures/pdf/2025/gr86_ebrochure.pdf")
 (defn toyota-rag [question]
   (let [toyota (pyo/download-file -toyota-document)
-        text (pyjama.io.indexing/extract-text toyota)
+        text (pyjama.io.readers/extract-text toyota)
         pre "Context: \n\n
         %s.
         \n\n
