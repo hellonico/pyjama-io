@@ -2,6 +2,7 @@
   (:require [clj-http.client :as client]
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
+            [pyjama.utils]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as str])
   (:import (java.io File)))
@@ -31,23 +32,8 @@
 (defn load-best-documents [file-path]
   (read-string (slurp file-path)))
 
-(defn load-lines-of-file
-  "Load all the lines of a text file.
-  Can specify start and end.
-  Also lines with # are not taken into account"
-  ([file-path]
-   (load-lines-of-file file-path 0 ##Inf))
-
-  ([file-path start]
-   (load-lines-of-file file-path start ##Inf))
-
-  ([file-path start end]
-   (with-open [rdr (io/reader file-path)]
-     (->> (line-seq rdr)
-          (drop start)
-          (take (if (= end ##Inf) Integer/MAX_VALUE (- end start)))
-          (filter #(not (str/starts-with? (str %) "#")))
-          doall))))
+(def load-lines-of-file
+  pyjama.utils/load-lines-of-file)
 
 (defn get-extension [filename]
   (let [parts (str/split filename #"\.")]
