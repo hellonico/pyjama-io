@@ -3,6 +3,7 @@
     [clojure.string :as str]
     [mikera.vectorz.core :as vectorz]
     [pyjama.embeddings]
+    [pyjama.io.core]
     [pyjama.io.readers]
     [taoensso.nippy :as nippy])
   (:import (java.io DataInputStream DataOutputStream FileInputStream FileOutputStream)
@@ -22,7 +23,7 @@
   (with-open [out (DataOutputStream. (FileOutputStream. ^String filename))]
     (nippy/freeze-to-out! out docs)))
 
-(defn load-documents [filename]
+(defn load-persisted-documents [filename]
   (with-open [in (DataInputStream. (FileInputStream. ^String filename))]
     (nippy/thaw-from-in! in)))
 
@@ -36,9 +37,31 @@
         embeddings (pyjama.embeddings/generate-vectorz-documents (assoc config :documents text))]
     (map #(assoc % :file file) embeddings)))
 
+; TODO refactor with: load-files-from-folders
 (defn generate-vectorz-folder [config folder extensions]
   (let [files (filter #(.isFile %) (file-seq (clojure.java.io/file folder))) ;; Exclude directories
         valid-files (if (seq extensions)
                       (filter #(some (fn [ext] (str/ends-with? (str %) ext)) extensions) files)
                       files)]
     (mapcat #(generate-vectorz-file config %) valid-files)))
+
+(defn load-documents [config]
+  (let [persist-file (or (:embeddings-file config) "embeddings.bin")
+        input (:documents config)
+        documents
+        (cond
+          (or (vector? input) (string? input))
+          (let [_documents (pyjama.embeddings/generate-vectorz-documents config)]
+                (pyjama.io.embeddings/save-documents persist-file _documents) _documents)
+          (pyjama.io.core/file-exists? persist-file) (pyjama.io.embeddings/load-persisted-documents persist-file)
+          :else
+          (let [documents
+                (pyjama.io.embeddings/generate-vectorz-folder
+                  (select-keys config [:documents :url :chunk-size :embedding-model]) (:documents config) nil)]
+            (pyjama.io.embeddings/save-documents persist-file documents) documents)
+          )]
+    documents))
+
+(defn rag [config]
+  (let [documents (pyjama.io.embeddings/load-documents config)]
+    (pyjama.embeddings/simple-rag config documents)))

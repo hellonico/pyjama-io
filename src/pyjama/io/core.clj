@@ -10,10 +10,8 @@
   (zero? (.length (io/file file-path))))
 
 (defn file-exists? [filename]
-  (.exists (File. filename)))
+  (.exists (io/as-file filename)))
 
-;(defn save-best-documents [file-path best-docs]
-;  (spit file-path best-docs))
 (defn save-to-file [file-path best-docs]
   (spit file-path (with-out-str (pprint best-docs)))
   best-docs)
@@ -33,11 +31,10 @@
 (defn load-best-documents [file-path]
   (read-string (slurp file-path)))
 
-;(defn load-lines-of-file [file-path]
-;  (with-open [rdr (io/reader file-path)]
-;    (doall (filter #(not (clojure.string/starts-with? (str %) "#")) (line-seq rdr)))))
-
 (defn load-lines-of-file
+  "Load all the lines of a text file.
+  Can specify start and end.
+  Also lines with # are not taken into account"
   ([file-path]
    (load-lines-of-file file-path 0 ##Inf))
 

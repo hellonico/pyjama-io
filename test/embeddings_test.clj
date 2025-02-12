@@ -3,52 +3,25 @@
             [clojure.string :as str]
             [clojure.test :refer :all]
             [pyjama.core]
-            [pyjama.embeddings :refer [enhanced-context generate-vectorz-documents]]
             [pyjama.io.core :as pyo]
-            [pyjama.io.embeddings]
+            [pyjama.io.embeddings :refer [rag]]
             [pyjama.io.indexing]
-            [pyjama.io.readers])
-  (:import (java.io File)))
+            [pyjama.io.readers]))
 
 (def url (or (System/getenv "OLLAMA_URL")
              "http://localhost:11432"))
-(def embedding-model
-  "mxbai-embed-large")
+(def embedding-model "mxbai-embed-large")
 
+; make sure the embedding model is here
 (deftest pull-embeddings-model
   (->
     (pyjama.core/ollama url :pull {:model embedding-model})
     (println)))
 
-(defn rag [config]
-  (let [persist-file (or (:embeddings-file config) "embeddings.bin")
-        documents
-        (if (pyjama.io.core/file-exists? persist-file)
-          (pyjama.io.embeddings/load-documents persist-file)
-          (let [documents
-                (generate-vectorz-documents
-                  (select-keys config [:documents :url :chunk-size :embedding-model]))]
-            (pyjama.io.embeddings/save-documents persist-file documents)
-            documents))
-
-        enhanced-context
-        (enhanced-context
-          (assoc
-            (select-keys config
-                         [:question :url :embedding-model :top-n])
-            :documents documents
-            ))]
-    (pyjama.core/ollama
-      url
-      :generate
-      (assoc
-        (select-keys config [:options :stream :model :pre])
-        :prompt [enhanced-context (:question config)])
-      :response)))
-
+; show streaming rag
 (deftest smurfs-embeddings
-  (let [text "The sky is blue because the smurfs are blue.
-              The sky is red in the evening because the grand smurf is too."
+  (let [text ["The sky is blue because the smurfs are blue."
+              "The sky is red in the evening because the grand smurf is too."]
         pre "Context: \n\n
         %s.
         \n\n
@@ -57,18 +30,21 @@
         using no previous knowledge and ONLY knowledge from the context. No comments.
         Make the answer as short as possible."
         question "why is the sky red?"
+        config {:pre             pre
+                :embeddings-file "skyisblue.bin"
+                :url             url
+                :model           "llama3.1"
+                :stream          true
+                :callback        pyjama.core/print-generate-tokens
+                :chunk-size      4096
+                :top-n           1
+                :question        question
+                :documents       text
+                :embedding-model embedding-model}
         ]
-    (rag {:pre             pre
-          :embeddings-file "skyisblue.bin"
-          :url             url
-          :model           "mistral"
-          :stream          true
-          :chunk-size      4096
-          :top-n           1
-          :question        question
-          :documents       text
-          :embedding-model embedding-model})))
+    (rag config)))
 
+; shows assert answer rag
 (def -toyota-document "https://www.toyota.com/content/dam/toyota/brochures/pdf/2025/gr86_ebrochure.pdf")
 (defn toyota-rag [question]
   (let [toyota (pyo/download-file -toyota-document)
