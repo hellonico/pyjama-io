@@ -1,5 +1,6 @@
 (ns pyjama.io.embeddings
   (:require
+    [clojure.java.io :as io]
     [clojure.string :as str]
     [mikera.vectorz.core :as vectorz]
     [pyjama.embeddings]
@@ -50,15 +51,21 @@
         input (:documents config)
         documents
         (cond
-          (or (vector? input) (string? input))
-          (let [_documents (pyjama.embeddings/generate-vectorz-documents config)]
-                (pyjama.io.embeddings/save-documents persist-file _documents) _documents)
-          (pyjama.io.core/file-exists? persist-file) (pyjama.io.embeddings/load-persisted-documents persist-file)
-          :else
+          (pyjama.io.core/file-exists? (str persist-file))
+          (pyjama.io.embeddings/load-persisted-documents persist-file)
+
+          (.isDirectory (io/as-file (str input)))
           (let [documents
                 (pyjama.io.embeddings/generate-vectorz-folder
                   (select-keys config [:documents :url :chunk-size :embedding-model]) (:documents config) nil)]
             (pyjama.io.embeddings/save-documents persist-file documents) documents)
+
+          (or (vector? input) (string? input))
+          (let [_documents (pyjama.embeddings/generate-vectorz-documents config)]
+            (pyjama.io.embeddings/save-documents persist-file _documents) _documents)
+          :else
+          (throw (Exception. "No documents"))
+
           )]
     documents))
 

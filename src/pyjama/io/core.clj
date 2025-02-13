@@ -19,7 +19,7 @@
 
 (defn save-to-csv
   ([output-file object]
-   (save-to-csv object output-file []))
+   (save-to-csv output-file object nil))
   ([output-file object headers]
    (with-open [writer (io/writer output-file)]
      (csv/write-csv writer (cons headers object)))))
