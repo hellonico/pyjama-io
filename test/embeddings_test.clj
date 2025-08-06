@@ -9,7 +9,7 @@
             [pyjama.io.readers]))
 
 (def url (or (System/getenv "OLLAMA_URL")
-             "http://localhost:11432"))
+             "http://localhost:11434"))
 (def embedding-model "mxbai-embed-large")
 
 ; make sure the embedding model is here
@@ -72,3 +72,31 @@
     (str/includes? (toyota-rag "what's the latest toyota model?") "GR86"))
   (assert
     (str/includes? (toyota-rag "what's the name of the sonar of the toyota model?") "Rear Parking Sonar")))
+
+(def -vercingetorix-page
+ "https://www.lemonde.fr/series-d-ete/article/2025/08/03/comment-vercingetorix-est-devenu-le-premier-heros-du-roman-national_6626432_3451060.html")
+
+(deftest vercingetorix-rag
+ (testing "vercingetorix summary from Le Monde page"
+  (let [page-html (pyo/download-file -vercingetorix-page)
+        text      (pyjama.io.readers/extract-text page-html)
+        pre       "Context:\n\n
+                     %s.
+                     \n\n
+                     Answer the question:
+                     %s
+                     using no previous knowledge and ONLY knowledge from the context. No comments.
+                     Make the answer as short as possible."
+        question  "Give me a brief summary about Vercingetorix."
+        rag-res   (rag {:pre             pre
+                        :embeddings-file "vercingetorix.bin"
+                        :url             url
+                        :model           "llama3.1"
+                        :chunk-size      600
+                        :top-n           3
+                        :question        question
+                        :documents       text
+                        :embedding-model embedding-model})]
+   (println rag-res)
+   (is
+    (re-find #"vercingétorix" (clojure.string/lower-case rag-res))))))

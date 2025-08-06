@@ -57,10 +57,11 @@
     (not (.exists (clojure.java.io/as-file path))) false
     :default (read-string (slurp path))))
 
-
 (defn download-file [url]
-  (let [temp-file (File/createTempFile "llama-parse" ".pdf")]
-    (with-open [in-stream (:body (client/get url {:as :stream}))
-                out-stream (io/output-stream temp-file)]
-      (io/copy in-stream out-stream))
-    temp-file))
+ (let [{:keys [body headers]} (client/get url {:as :stream})
+       ext     (get-extension url)
+       temp    (File/createTempFile "llama-parse" ext)]
+  (with-open [in-stream body
+              out-stream (io/output-stream temp)]
+   (io/copy in-stream out-stream))
+  (.getAbsolutePath temp)))

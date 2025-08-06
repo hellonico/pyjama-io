@@ -33,12 +33,18 @@
           extracted-text (map extract-content spine-items)]
       (clojure.string/join "\n\n" extracted-text))))
 
+
+(defn extract-html-text [file-path]
+ (let [html (slurp file-path)
+       doc (Jsoup/parse html)]
+  (.text doc)))
+
 (defn extract-text [file-path]
-  (let [handlers {#{"pdf"}        extract-pdf-text
-                  #{"epub"}       extract-epub-text
-                  ;#{"md"}         -> slurp
-                  #{"doc" "docx"} extract-docx-text}
-        ext (some #(if (some (fn [x] (clojure.string/ends-with? file-path x)) %) %) (keys handlers))]
-    (if ext
-      ((get handlers ext slurp) file-path)
-      (slurp file-path))))
+ (let [handlers {#{"pdf"}        extract-pdf-text
+                 #{"epub"}       extract-epub-text
+                 #{"doc" "docx"} extract-docx-text
+                 #{"html" "htm"} extract-html-text} ; 👈 added HTML support
+       ext (some #(if (some (fn [x] (clojure.string/ends-with? file-path x)) %) %) (keys handlers))]
+  (if ext
+   ((get handlers ext slurp) file-path)
+   (slurp file-path))))
