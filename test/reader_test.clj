@@ -19,3 +19,9 @@
    -vercingetorix-page
    ;(pyo/download-file)
    (extract-text))))
+
+(deftest url-with-folder-name
+ (println
+  (->
+   "https://menscenter.org/top-5-mistakes-rejected-targeted-parents-make/"
+   (extract-text))))

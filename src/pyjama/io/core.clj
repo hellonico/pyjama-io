@@ -5,7 +5,8 @@
            [pyjama.utils]
            [clojure.pprint :refer [pprint]]
            [clojure.string :as str])
- (:import (java.io File)))
+ (:import (java.io File)
+          (java.net URI)))
 
 (defn file-empty? [file-path]
  (zero? (.length (io/file file-path))))
@@ -35,10 +36,10 @@
 (def load-lines-of-file
  pyjama.utils/load-lines-of-file)
 
-(defn get-extension [filename]
- (let [parts (str/split filename #"\.")]
-  (when (> (count parts) 1)                                 ; Ensure there's an extension
-   (str/lower-case (last parts)))))
+(defn get-extension [url]
+ (let [path (.getPath (URI. url))
+       filename (last (str/split path #"/"))]
+  (second (re-matches #".*\.([a-zA-Z0-9]+)$" filename))))
 
 (defn load-files-from-folders [folder-path valid-extensions]
  (->> (io/file folder-path)
@@ -61,7 +62,8 @@
  ([url]
   (let [ext (get-extension url)
         ;; Ensure extension has leading dot
-        suffix (if (str/starts-with? ext ".") ext (str "." ext))
+        ;suffix (if (str/starts-with? ext ".") ext (str "." ext))
+        suffix    (if ext (str "." ext) ".html")
         temp-file (File/createTempFile "llama-parse" suffix)]
    (download-file url (.getAbsolutePath temp-file))))
 
@@ -78,4 +80,5 @@
  (if (str/starts-with? path "http")
   (download-file path)
   path))
+
 
