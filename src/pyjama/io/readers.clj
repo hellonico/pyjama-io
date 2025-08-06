@@ -1,5 +1,7 @@
 (ns pyjama.io.readers
-  (:require [clojure.java.io :as io])
+ (:require [clojure.java.io :as io]
+           [clojure.string :as str]
+           [pyjama.io.core :as pyo])
   (:import (java.io FileInputStream)
            (java.io FileInputStream)
            (nl.siegmann.epublib.epub EpubReader)
@@ -34,17 +36,43 @@
       (clojure.string/join "\n\n" extracted-text))))
 
 
+;(defn extract-html-text [file-path]
+; (let [html (slurp file-path)
+;       doc (Jsoup/parse html)]
+;  (.text doc)))
+
 (defn extract-html-text [file-path]
  (let [html (slurp file-path)
-       doc (Jsoup/parse html)]
-  (.text doc)))
+       doc  (Jsoup/parse html)]
 
-(defn extract-text [file-path]
- (let [handlers {#{"pdf"}        extract-pdf-text
+  ;; Remove noise
+  (doseq [selector ["script" "style" "nav" "footer" "header" "aside" "form" "noscript" "svg"]]
+   (doseq [el (.select doc selector)]
+    (.remove el)))
+
+  ;; Try selecting main content blocks
+  (let [content (.select doc "main, article, .content, .post, .article, .entry, .markdown-body")
+        text (if (and content (not (.isEmpty content)))
+              (->> content
+                   (map #(.text %))
+                   (clojure.string/join "\n\n"))
+              ;; fallback to body text
+              (.text (.body doc)))]
+
+   ;; Normalize & clean
+   (-> text
+       (clojure.string/replace #"\s+\n" "\n")         ; remove trailing spaces on lines
+       (clojure.string/replace #"\n{3,}" "\n\n")      ; limit excessive line breaks
+       (clojure.string/replace #"[ \t]+" " ")         ; normalize spaces
+       (clojure.string/trim)))))
+
+(defn extract-text [path]
+ (let [resolved-path (pyo/resolve-path path)
+       handlers {#{"pdf"}        extract-pdf-text
                  #{"epub"}       extract-epub-text
                  #{"doc" "docx"} extract-docx-text
-                 #{"html" "htm"} extract-html-text} ; 👈 added HTML support
-       ext (some #(if (some (fn [x] (clojure.string/ends-with? file-path x)) %) %) (keys handlers))]
+                 #{"html" "htm"} extract-html-text}
+       ext (some #(when (some (fn [x] (str/ends-with? resolved-path x)) %) %) (keys handlers))]
   (if ext
-   ((get handlers ext slurp) file-path)
-   (slurp file-path))))
+   ((get handlers ext slurp) resolved-path)
+   (slurp resolved-path))))

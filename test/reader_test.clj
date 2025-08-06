@@ -17,5 +17,5 @@
  (println
   (->
    -vercingetorix-page
-   (pyo/download-file)
+   ;(pyo/download-file)
    (extract-text))))
