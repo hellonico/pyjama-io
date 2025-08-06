@@ -4,7 +4,7 @@
     [clojure.string :as str]
     [mikera.vectorz.core :as vectorz]
     [pyjama.embeddings]
-    [pyjama.io.core]
+    [pyjama.io.core :as pyo]
     [pyjama.io.readers]
     [taoensso.nippy :as nippy])
   (:import (java.io DataInputStream DataOutputStream FileInputStream FileOutputStream)
@@ -28,23 +28,16 @@
   (with-open [in (DataInputStream. (FileInputStream. ^String filename))]
     (nippy/thaw-from-in! in)))
 
-;
-;
-;
-
 (defn generate-vectorz-file [config file]
   (println "Embeddings:" file)
   (let [text (pyjama.io.readers/extract-text file)
         embeddings (pyjama.embeddings/generate-vectorz-documents (assoc config :documents text))]
     (map #(assoc % :file file) embeddings)))
 
-; TODO refactor with: load-files-from-folders
 (defn generate-vectorz-folder [config folder extensions]
-  (let [files (filter #(.isFile %) (file-seq (clojure.java.io/file folder))) ;; Exclude directories
-        valid-files (if (seq extensions)
-                      (filter #(some (fn [ext] (str/ends-with? (str %) ext)) extensions) files)
-                      files)]
-    (mapcat #(generate-vectorz-file config %) valid-files)))
+ (let [valid-paths (pyo/load-files-from-folders folder #(some (partial str/ends-with? %) extensions))
+       files (map io/file valid-paths)]
+  (mapcat #(generate-vectorz-file config %) files)))
 
 (defn load-documents [config]
   (let [persist-file (or (:embeddings-file config) "embeddings.bin")
