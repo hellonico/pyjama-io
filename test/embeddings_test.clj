@@ -97,6 +97,6 @@
                         :question        question
                         :documents       text
                         :embedding-model embedding-model})]
-   (println rag-res)
+   ;(println rag-res)
    (is
     (re-find #"vercingétorix" (clojure.string/lower-case rag-res))))))
