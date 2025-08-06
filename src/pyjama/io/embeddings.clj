@@ -39,9 +39,15 @@
        files (map io/file valid-paths)]
   (mapcat #(generate-vectorz-file config %) files)))
 
+
+(defn path->embedding-path [path]
+ (let [hash (-> path .hashCode str)]
+  (str "/tmp/embeddings-" hash ".bin")))
+
+
 (defn load-documents [config]
-  (let [persist-file (or (:embeddings-file config) "embeddings.bin")
-        input (:documents config)
+  (let [input (:documents config)
+        persist-file (or (:embeddings-file config) (path->embedding-path input))
         documents
         (cond
           (pyjama.io.core/file-exists? (str persist-file))

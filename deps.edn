@@ -30,6 +30,11 @@
            }
 
  :aliases   {
+             :cli
+             {:main-opts ["-m" "pyjama.io.cli"]
+              :extra-deps  {hellonico/pyjama                     {:local/root "../pyjama"}}
+              }
+
              :test {:extra-paths ["test"]
                     :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}
                                   hellonico/pyjama                     {:local/root "../pyjama"}}

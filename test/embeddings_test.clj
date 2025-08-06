@@ -89,7 +89,7 @@
                      Make the answer as short as possible."
         question  "Give me a brief summary about Vercingetorix."
         rag-res   (rag {:pre             pre
-                        :embeddings-file "vercingetorix.bin"
+                        ;:embeddings-file "vercingetorix.bin"
                         :url             url
                         :model           "llama3.1"
                         :chunk-size      600
