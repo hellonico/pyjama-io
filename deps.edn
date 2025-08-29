@@ -1,18 +1,18 @@
 {
  :mvn/repos {"psiegman" {:url "https://raw.githubusercontent.com/psiegman/mvn-repo/master/releases/"}}
  :paths   ["src" "resources"]
- :deps    {org.clojure/clojure      {:mvn/version "1.11.1"} ; Adjust to the desired Clojure version
-           dk.ative/docjure         {:mvn/version "1.14.0"} ; Library for Excel file handling
+ :deps    {org.clojure/clojure      {:mvn/version "1.12.1"} ; Adjust to the desired Clojure version
+           dk.ative/docjure         {:mvn/version "1.21.0"} ; Library for Excel file handling
            org.clojure/data.csv     {:mvn/version "1.1.0"}
 
            org.clojure/data.zip     {:mvn/version "1.0.0"}
-           org.apache.poi/poi-ooxml {:mvn/version "5.2.3"}
+           org.apache.poi/poi-ooxml {:mvn/version "5.4.1"}
 
            ; emebddings
-           com.taoensso/nippy {:mvn/version "3.4.2"}
+           com.taoensso/nippy       {:mvn/version "3.6.0"}
 
            ; pdf text
-           org.apache.pdfbox/pdfbox {:mvn/version "2.0.30"}
+           org.apache.pdfbox/pdfbox {:mvn/version "3.0.5"}
 
            ; pdf tables
            ;technology.tabula/tabula-extractor {:mvn/version "1.0.6"}}
@@ -25,14 +25,14 @@
 
            ; for caching parsed documents
            org.clojure/java.jdbc {:mvn/version "0.7.12"}
-           org.xerial/sqlite-jdbc {:mvn/version "3.45.1.0"}
+           org.xerial/sqlite-jdbc {:mvn/version "3.50.3.0"}
 
            }
 
  :aliases   {
              :cli
-             {:main-opts ["-m" "pyjama.io.cli"]
-              :extra-deps  {hellonico/pyjama                     {:local/root "../pyjama"}}
+             {:main-opts  ["-m" "pyjama.io.cli"]
+              :extra-deps {hellonico/pyjama {:local/root "../pyjama"}}
               }
 
              :test {:extra-paths ["test"]
