@@ -1,5 +1,15 @@
 (ns pyjama.io.indexing
-  "This uses lucene to index documents. Also allows to retrieve text later."
+  "Lucene/Clucy-based indexing and lightweight retrieval/augmentation for local documents.
+
+  - Indexes files into a disk-backed index (default directory: \"clucy\").
+  - Scores and selects best-matching documents given weighted keywords.
+  - Extracts relevant sentences or parts from a document to build augmented context.
+
+  Key functions:
+  - index-document, index-documents
+  - best-matching-document
+  - extract-relevant-sentences-in-doc, extract-relevant-text-parts
+  - augmented-text: choose :sentences, :parts, or :full."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clucy.core :as clucy]

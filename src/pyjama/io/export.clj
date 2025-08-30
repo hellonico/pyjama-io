@@ -1,4 +1,11 @@
 (ns pyjama.io.export
+  "Export utilities for writing task results to CSV or Excel.
+
+  - export-tasks-results pivots data into a table of prompts × models and writes:
+    - .csv via clojure.data.csv
+    - .xlsx via Docjure (sets column widths and text wrapping)
+
+  Also pretty-prints the input data for debugging."
   (:require
     [clojure.data.csv :as csv]
     [clojure.pprint]

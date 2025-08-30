@@ -1,4 +1,23 @@
 (ns pyjama.io.embeddings
+  "Utilities for generating, persisting, and loading document embeddings, plus a thin RAG wrapper.
+
+  - Generates mikera.vectorz.Vector embeddings via pyjama.embeddings from raw text, files, or folders.
+  - Registers Nippy serializers for vectorz.Vector to efficiently persist/restore embeddings.
+  - Caches generated documents to a deterministic file (default: /tmp/embeddings-<hash>.bin) unless :embeddings-file is provided.
+  - Provides helpers to save/load persisted documents and to run a simple RAG flow over a corpus.
+
+  Primary entry points:
+  - load-documents: Returns a sequence of document maps with embeddings, loading from cache if available or generating and persisting otherwise.
+  - save-documents / load-persisted-documents: Explicit persistence round-trip using Nippy.
+  - generate-vectorz-file / generate-vectorz-folder: Build embeddings from a file or a folder (optionally filtered by extensions).
+  - rag: Loads documents and delegates to pyjama.embeddings/simple-rag.
+
+  Config keys:
+  - :documents        Path to a file or directory, a raw string of text, or a vector of strings.
+  - :embeddings-file  Optional path to the persistence file (overrides the default /tmp location).
+  - :chunk-size       Optional; forwarded to embedding generation.
+  - :embedding-model  Optional; forwarded to embedding generation.
+  - :url              Optional; forwarded where applicable."
   (:require
     [clojure.java.io :as io]
     [clojure.string :as str]

@@ -1,12 +1,28 @@
 (ns pyjama.io.cli
- (:require [clojure.string :as str]
-           [clojure.java.io :as io]
-           [clojure.tools.cli :refer [parse-opts]]
-           [pyjama.io.readers :refer [extract-text]]
-           [pyjama.io.core :as pyo]
-           [pyjama.io.embeddings :refer [path->embedding-path rag]])
- (:gen-class))
+  "Command-line entry point for running a simple RAG query over local files or URLs.
 
+  Flow:
+  - Resolves -p PATH (file, directory, or URL). URLs are downloaded to a temp file.
+  - Extracts text via pyjama.io.readers/extract-text.
+  - Calls pyjama.io.embeddings/rag with the text, model, and embedding-model.
+  - Prints the final answer.
+
+  Options:
+  -p, --path PATH       Path or URL to content
+  -q, --question TEXT   Question to ask (default: brief summary)
+  -m, --model NAME      Model name (default: llama3.1)
+  -h, --help            Show help
+
+  Environment:
+  - OLLAMA_URL sets the API URL (default: http://localhost:11434).
+  - Embedding model default: mxbai-embed-large."
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]
+            [clojure.tools.cli :refer [parse-opts]]
+            [pyjama.io.readers :refer [extract-text]]
+            [pyjama.io.core :as pyo]
+            [pyjama.io.embeddings :refer [path->embedding-path rag]])
+  (:gen-class))
 
 (def url (or (System/getenv "OLLAMA_URL")
              "http://localhost:11434"))

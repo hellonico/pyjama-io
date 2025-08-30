@@ -1,12 +1,18 @@
 (ns pyjama.io.cache
-  " This is a transparent memoize to SQLite namespace.
-  Use with:
+  "Persistent, transparent memoization backed by SQLite.
 
+  - Stores results per (function-name, input) primary key in pyjama.cache.db.
+  - Inputs/outputs are serialized with pr-str and edn/read-string.
+  - Intended for pure, deterministic single-argument functions.
+  - The cache table is created at load time.
+
+  Key functions:
+  - memoize-to-sqlite: wrap a unary function so results are cached by fn-name.
+  - get-cached, cache-result, list-cache-keys, init-db.
+
+  Example:
   (alter-var-root #'pyjama.io.readers/extract-text
-  (fn [original-fn]
-  (pyjama.io.cache/memoize-to-sqlite \"extract-text\" original-fn)))
-
-  "
+    (fn [orig] (pyjama.io.cache/memoize-to-sqlite \"extract-text\" orig)))"
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.edn :as edn]))
 

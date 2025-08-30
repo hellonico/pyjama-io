@@ -1,7 +1,19 @@
 (ns pyjama.io.readers
- (:require [clojure.java.io :as io]
-           [clojure.string :as str]
-           [pyjama.io.core :as pyo])
+  "Content extraction utilities for common document types.
+
+  Supported:
+  - PDF via Apache PDFBox
+  - DOCX via Apache POI
+  - EPUB via Epublib + Jsoup (paragraph aggregation)
+  - HTML via Jsoup (noise removal and main-content heuristics)
+  - Plain text (fallback)
+
+  Primary entry:
+  - extract-text: resolves URLs via pyjama.io.core/resolve-path, dispatches by file
+    extension, and returns cleaned text."
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [pyjama.io.core :as pyo])
   (:import (java.io FileInputStream)
            (java.io FileInputStream)
            (nl.siegmann.epublib.epub EpubReader)

@@ -1,12 +1,28 @@
 (ns pyjama.io.core
- (:require [clj-http.client :as client]
-           [clojure.data.csv :as csv]
-           [clojure.java.io :as io]
-           [pyjama.utils]
-           [clojure.pprint :refer [pprint]]
-           [clojure.string :as str])
- (:import (java.io File)
-          (java.net URI)))
+  "General IO and utility helpers used across pyjama.io.
+
+  Files:
+  - file-exists?, file-empty?, get-extension (from URL path)
+  - load-files-from-folders with an extension predicate
+
+  Persistence:
+  - save-to-file (pprint), pprint-to-file, read-settings (EDN)
+  - save-to-csv, append-to-csv, load-best-documents
+
+  Networking:
+  - download-file streams a URL to disk (keeps/guesses extension)
+  - resolve-path downloads if the input is an http(s) URL
+
+  Aliases:
+  - load-lines-of-file is delegated to pyjama.utils."
+  (:require [clj-http.client :as client]
+            [clojure.data.csv :as csv]
+            [clojure.java.io :as io]
+            [pyjama.utils]
+            [clojure.pprint :refer [pprint]]
+            [clojure.string :as str])
+  (:import (java.io File)
+           (java.net URI)))
 
 (defn file-empty? [file-path]
  (zero? (.length (io/file file-path))))

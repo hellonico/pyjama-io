@@ -1,10 +1,14 @@
 (ns pyjama.io.linen
-  "Functions used in linen to read excel and csv. Should be migrated"
+  "Legacy CSV/Excel readers used by the 'linen' workflow.
+
+  - read-excel: returns {:headers [...], :rows [{...} ...]} from the first sheet.
+  - read-csv: returns {:headers [...], :rows [{...} ...]}.
+
+  Note: slated for migration; prefer shared, centralized IO utilities where possible."
   (:require
     [clojure.data.csv :as csv]
     [clojure.java.io :as io]
-    [dk.ative.docjure.spreadsheet :as ss]
-    )
+    [dk.ative.docjure.spreadsheet :as ss])
   (:import (org.apache.poi.ss.usermodel Cell)))
 
 ; TODO where is this called from

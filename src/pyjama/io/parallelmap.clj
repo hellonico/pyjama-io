@@ -1,4 +1,10 @@
 (ns pyjama.io.parallelmap
+  "Helpers to read CSV/Excel grids and construct parameter maps for parallel runs.
+
+  - read-csv/read-excel: load data as sequences of rows.
+  - load-data: dispatch by file extension (csv, xls, xlsx).
+  - construct-map: expects headers like \"models\", \"prompts\", optional \"pre\" and \"system\";
+    returns {:models [...], :prompts [...], :pre \"...\"?, :system \"...\"?} suitable for downstream tasks."
   (:require
     [clojure.data.csv :as csv]
     [clojure.java.io :as io]
