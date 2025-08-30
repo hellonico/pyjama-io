@@ -15,16 +15,16 @@
             [clojure.string :as str]
             [pyjama.io.core :as pyo])
   (:import (java.io FileInputStream)
-           (java.io FileInputStream)
+           (java.io File FileInputStream)
            (nl.siegmann.epublib.epub EpubReader)
-           (org.apache.pdfbox.pdmodel PDDocument)
+           (org.apache.pdfbox Loader)
            (org.apache.pdfbox.text PDFTextStripper)
            (org.apache.poi.xwpf.extractor XWPFWordExtractor)
            (org.apache.poi.xwpf.usermodel XWPFDocument)
            (org.jsoup Jsoup)))
 
 (defn extract-pdf-text [file-path]
-  (with-open [doc (PDDocument/load (io/file file-path))]
+  (with-open [doc (Loader/loadPDF ^File (io/file file-path))]
     (let [stripper (PDFTextStripper.)]
       (.getText stripper doc))))
 
