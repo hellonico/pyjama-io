@@ -5,6 +5,7 @@
   - PDF via Apache PDFBox
   - DOCX via Apache POI
   - EPUB via Epublib + Jsoup (paragraph aggregation)
+  - PPT/PPTX via custom code
   - HTML via Jsoup (noise removal and main-content heuristics)
   - Plain text (fallback)
 
@@ -13,6 +14,7 @@
     extension, and returns cleaned text."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [ppt2md.core :as pptmd]
             [pyjama.io.core :as pyo])
   (:import (java.io FileInputStream)
            (java.io File FileInputStream)
@@ -79,12 +81,17 @@
        (clojure.string/trim)))))
 
 (defn extract-text [path]
- (let [resolved-path (pyo/resolve-path path)
-       handlers {#{"pdf"}        extract-pdf-text
-                 #{"epub"}       extract-epub-text
-                 #{"doc" "docx"} extract-docx-text
-                 #{"html" "htm"} extract-html-text}
-       ext (some #(when (some (fn [x] (str/ends-with? resolved-path x)) %) %) (keys handlers))]
-  (if ext
-   ((get handlers ext slurp) resolved-path)
-   (slurp resolved-path))))
+  (let [resolved-path (-> (pyo/resolve-path path) str)
+        lower-path    (str/lower-case resolved-path)
+        handlers {#{"pdf"}        extract-pdf-text
+                  #{"epub"}       extract-epub-text
+                  #{"doc" "docx"} extract-docx-text
+                  #{"html" "htm"} extract-html-text
+                  #{"ppt" "pptx"} pptmd/to-md}                   ; << add this
+        ;; find the matching extension-set by suffix (case-insensitive)
+        ext (some (fn [exts]
+                    (when (some #(str/ends-with? lower-path (str "." %)) exts) exts))
+                  (keys handlers))]
+    (if ext
+      ((get handlers ext slurp) resolved-path)
+      (slurp resolved-path))))

@@ -25,3 +25,10 @@
   (->
    "https://menscenter.org/top-5-mistakes-rejected-targeted-parents-make/"
    (extract-text))))
+
+(deftest test-ppt-with-tables
+  (println
+    (->
+      "test-resources/clojure.pptx"
+      ;(pyo/download-file)
+      (extract-text))))
