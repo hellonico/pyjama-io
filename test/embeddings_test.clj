@@ -107,18 +107,18 @@
 (deftest pptx-rag
   (testing "clojure power point as source of trust"
     (let [text (pyjama.io.readers/extract-text "test-resources/clojure.pptx")
+          ;_ (println text)
           pre "Context:\n\n
-                     %s.
-                     \n\n
-                     Answer the question:
                      %s
-                     using no previous knowledge and ONLY knowledge from the context. No comments.
-                     Make the answer as short as possible."
-          question "Give me a brief summary of Clojure."
+                     \n\n
+
+                     %s
+                     "
+          question "Summarize in 3 points."
           rag-res (rag {:pre             pre
-                        :embeddings-file "clojure.bin"
+                        :embeddings-file "clojure2.bin"
                         :url             url
-                        :model           "llama3.1"
+                        :model           "gpt-oss"
                         :chunk-size      600
                         :top-n           3
                         :question        question
@@ -127,4 +127,4 @@
                         :embedding-model embedding-model})]
       (println rag-res)
       (is
-        (re-find #"clojure" (clojure.string/lower-case rag-res))))))
+        (re-find #"rust" (clojure.string/lower-case rag-res))))))
