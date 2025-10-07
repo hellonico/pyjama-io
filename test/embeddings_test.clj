@@ -74,29 +74,57 @@
     (str/includes? (toyota-rag "what's the name of the sonar of the toyota model?") "Rear Parking Sonar")))
 
 (def -vercingetorix-page
- "https://www.lemonde.fr/series-d-ete/article/2025/08/03/comment-vercingetorix-est-devenu-le-premier-heros-du-roman-national_6626432_3451060.html")
+  "https://www.lemonde.fr/series-d-ete/article/2025/08/03/comment-vercingetorix-est-devenu-le-premier-heros-du-roman-national_6626432_3451060.html")
 
 (deftest vercingetorix-rag
- (testing "vercingetorix summary from Le Monde page"
-  (let [page-html (pyo/download-file -vercingetorix-page)
-        text      (pyjama.io.readers/extract-text page-html)
-        pre       "Context:\n\n
+  (testing "vercingetorix summary from Le Monde page"
+    (let [page-html (pyo/download-file -vercingetorix-page)
+          text (pyjama.io.readers/extract-text page-html)
+          pre "Context:\n\n
                      %s.
                      \n\n
                      Answer the question:
                      %s
                      using no previous knowledge and ONLY knowledge from the context. No comments.
                      Make the answer as short as possible."
-        question  "Give me a brief summary about Vercingetorix."
-        rag-res   (rag {:pre             pre
-                        ;:embeddings-file "vercingetorix.bin"
+          question "Give me a brief summary about Vercingetorix."
+          rag-res (rag {:pre             pre
+                        :embeddings-file "vercingetorix.bin"
                         :url             url
                         :model           "llama3.1"
                         :chunk-size      600
                         :top-n           3
                         :question        question
+                        :stream          false
                         :documents       text
                         :embedding-model embedding-model})]
-   ;(println rag-res)
-   (is
-    (re-find #"vercingétorix" (clojure.string/lower-case rag-res))))))
+      (println rag-res)
+      (is
+        (re-find #"vercingétorix" (clojure.string/lower-case rag-res))))))
+
+
+
+(deftest pptx-rag
+  (testing "clojure power point as source of trust"
+    (let [text (pyjama.io.readers/extract-text "test-resources/clojure.pptx")
+          pre "Context:\n\n
+                     %s.
+                     \n\n
+                     Answer the question:
+                     %s
+                     using no previous knowledge and ONLY knowledge from the context. No comments.
+                     Make the answer as short as possible."
+          question "Give me a brief summary of Clojure."
+          rag-res (rag {:pre             pre
+                        :embeddings-file "clojure.bin"
+                        :url             url
+                        :model           "llama3.1"
+                        :chunk-size      600
+                        :top-n           3
+                        :question        question
+                        :stream          false
+                        :documents       text
+                        :embedding-model embedding-model})]
+      (println rag-res)
+      (is
+        (re-find #"clojure" (clojure.string/lower-case rag-res))))))
